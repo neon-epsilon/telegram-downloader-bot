@@ -1,0 +1,19 @@
+{
+  "name": "telegram_bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/neon_epsilon/telegram_bot.git"
+  },
+  "author": "Alexander Spies",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/neon_epsilon/telegram_bot#readme",
+  "dependencies": {
+    "telegraf": "^3.38.0"
+  }
+}
