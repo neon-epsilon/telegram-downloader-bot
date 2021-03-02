@@ -6,11 +6,19 @@ const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.start((ctx) => ctx.reply('Welcome'))
 
 bot.on('message', ctx => {
-  const files = ctx.update.message.photo
+  const data = ctx.update.message.photo || ctx.update.message.video
 
-  if(files) {
-    ctx.reply(files)
+  if(!data) {
+    return
   }
+
+  const fileId = ctx.update.message.photo ?
+    data.slice(-1)[0].file_id :
+    data.file_id
+
+  ctx.telegram.getFileLink(fileId).then(url => {
+    ctx.reply(url)
+  })
 })
 //bot.help((ctx) => ctx.reply('Supported commands: /frequency'))
 //bot.command('frequency', (ctx) => {
