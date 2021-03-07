@@ -14,6 +14,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/neon_epsilon/telegram_bot#readme",
   "dependencies": {
+    "node-fetch": "^2.6.1",
     "telegraf": "^3.38.0"
   }
 }

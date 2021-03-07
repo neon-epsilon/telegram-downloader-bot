@@ -1,11 +1,43 @@
-const fs = require('fs')
-const readline = require('readline')
 const { Telegraf } = require('telegraf')
+const fetch = require('node-fetch')
+const fs = require('fs')
+
+
+class HTTPResponseError extends Error {
+	constructor(response, ...args) {
+		super(`HTTP Error Response: ${response.status} ${response.statusText}`, ...args);
+		this.response = response;
+	}
+}
+
+const downloadFile = (async (ctx, url) => {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new HTTPResponseError(response)
+    }
+    const fileStream = fs.createWriteStream('./downloaded_files/asdf.jpg')
+    await new Promise((resolve, reject) => {
+      response.body.pipe(fileStream)
+      response.body.on("error", () => {
+        // TODO: Some way to access error message?
+        ctx.reply('Error while saving file.')
+        reject()
+      })
+      fileStream.on("finish", () => {
+        ctx.reply('Succesfully downloaded file.')
+        resolve()
+      })
+    })
+  } catch (error) {
+    ctx.reply('Error while downloading file: ' + error)
+  }
+})
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.start((ctx) => ctx.reply('Welcome'))
 
-bot.on('message', ctx => {
+bot.on('message', async ctx => {
   const data = ctx.update.message.photo || ctx.update.message.video
 
   if(!data) {
@@ -16,28 +48,12 @@ bot.on('message', ctx => {
     data.slice(-1)[0].file_id :
     data.file_id
 
-  ctx.telegram.getFileLink(fileId).then(url => {
-    ctx.reply(url)
-  })
-})
-//bot.help((ctx) => ctx.reply('Supported commands: /frequency'))
-//bot.command('frequency', (ctx) => {
-//  const rl = readline.createInterface({
-//    input: fs.createReadStream('access.log')
-//  })
-//
-//  const freq = {}
-//  rl.on('line', (line) => {
-//    const ip = line.split(' ')[0]
-//    freq[ip] = (freq[ip] + 1) || 1
-//  })
-//
-//  rl.on('close', () => {
-//    const list = Object.entries(freq)
-//      .sort((a,b) => b[1] - a[1])
-//    ctx.reply(list.join("\n"))
-//  })
-//})
+  // TODO: Big files may not be downloaded for some reason (bot API)
+  url =  await ctx.telegram.getFileLink(fileId)
 
+  downloadFile(ctx, url).then( () => {} )
+
+  ctx.reply('Now downloading file with url ' + url)
+})
 
 bot.launch()
