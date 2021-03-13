@@ -48,8 +48,14 @@ bot.on('message', async ctx => {
     data.slice(-1)[0].file_id :
     data.file_id
 
-  // TODO: Big files may not be downloaded for some reason (bot API)
-  url =  await ctx.telegram.getFileLink(fileId)
+  // Files bigger than 20MB may not be downloaded (per bot API); this throws a
+  // TelegramError.
+  try {
+    url =  await ctx.telegram.getFileLink(fileId)
+  } catch (error) {
+    ctx.reply('Error while getting file link: ' + error)
+    return
+  }
 
   downloadFile(ctx, url).then( () => {} )
 
