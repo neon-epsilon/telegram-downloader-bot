@@ -10,13 +10,13 @@ class HTTPResponseError extends Error {
 	}
 }
 
-const downloadFile = (async (reply, url) => {
+const downloadFile = (async (reply, url, fileName) => {
   try {
     const response = await fetch(url)
     if (!response.ok) {
       throw new HTTPResponseError(response)
     }
-    const fileStream = fs.createWriteStream('./downloaded_files/asdf.jpg')
+    const fileStream = fs.createWriteStream(fileName)
     await new Promise((resolve, reject) => {
       response.body.pipe(fileStream)
       response.body.on("error", () => {
@@ -57,7 +57,7 @@ bot.on('message', async ctx => {
     return
   }
 
-  downloadFile(ctx.reply, url)
+  downloadFile(ctx.reply, url, './downloaded_files/asdf.jpg')
 
   ctx.reply('Now downloading file with url ' + url)
 })
