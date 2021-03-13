@@ -10,7 +10,7 @@ class HTTPResponseError extends Error {
 	}
 }
 
-const downloadFile = (async (ctx, url) => {
+const downloadFile = (async (reply, url) => {
   try {
     const response = await fetch(url)
     if (!response.ok) {
@@ -21,16 +21,16 @@ const downloadFile = (async (ctx, url) => {
       response.body.pipe(fileStream)
       response.body.on("error", () => {
         // TODO: Some way to access error message?
-        ctx.reply('Error while saving file.')
+        reply('Error while saving file.')
         reject()
       })
       fileStream.on("finish", () => {
-        ctx.reply('Succesfully downloaded file.')
+        reply('Succesfully downloaded file.')
         resolve()
       })
     })
   } catch (error) {
-    ctx.reply('Error while downloading file: ' + error)
+    reply('Error while downloading file: ' + error)
   }
 })
 
@@ -57,7 +57,7 @@ bot.on('message', async ctx => {
     return
   }
 
-  downloadFile(ctx, url)
+  downloadFile(ctx.reply, url)
 
   ctx.reply('Now downloading file with url ' + url)
 })
