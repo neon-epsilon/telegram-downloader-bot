@@ -12,7 +12,7 @@ class HTTPResponseError extends Error {
 	}
 }
 
-const downloadFile = (async (reply, url, fileName) => {
+async function downloadFile(reply, url, fileName) {
   try {
     const response = await fetch(url)
     if (!response.ok) {
@@ -34,7 +34,9 @@ const downloadFile = (async (reply, url, fileName) => {
   } catch (error) {
     reply('Error while downloading file: ' + error)
   }
-})
+}
+
+
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.start((ctx) => ctx.reply('Welcome'))
@@ -63,10 +65,10 @@ bot.on('message', async ctx => {
     return
   }
 
-  const date = messageTime.toISOString().split('T')[0]
+  const timestamp = messageTime.toISOString().replace(/:/g, '').split('.')[0]
   const urlFileName = url.split('/').slice(-1)[0]
   const [base, extension] = urlFileName.split('.')
-  const fileName = downloadDirectory + '/' + date + '_' + String(localMessageNumber).padStart(4, '0') + '.' + extension
+  const fileName = downloadDirectory + '/' + timestamp + '_' + String(localMessageNumber).padStart(4, '0') + '.' + extension
 
   downloadFile(ctx.reply, url, fileName)
 })
