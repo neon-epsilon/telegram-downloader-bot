@@ -39,7 +39,11 @@ const downloadFile = (async (reply, url, fileName) => {
 const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.start((ctx) => ctx.reply('Welcome'))
 
+var globalMessageNumber = 0
 bot.on('message', async ctx => {
+  const localMessageNumber = ++globalMessageNumber
+  const messageTime = new Date()
+
   const data = ctx.update.message.photo || ctx.update.message.video
 
   if(!data) {
@@ -59,12 +63,10 @@ bot.on('message', async ctx => {
     return
   }
 
-  // isoformat-timestamp where we remove all occurences of ':' and '.' (so the
-  // filename constructed from it does not cause trouble on Windows)
-  timestamp = (new Date().toISOString()).replace(/:/g, '').replace(/\./g, '')
-  urlFileName = url.split('/').slice(-1)[0]
-  extension = urlFileName.split('.')[1]
-  fileName = downloadDirectory + '/' + timestamp + '.' + extension
+  const date = messageTime.toISOString().split('T')[0]
+  const urlFileName = url.split('/').slice(-1)[0]
+  const [base, extension] = urlFileName.split('.')
+  const fileName = downloadDirectory + '/' + date + '_' + String(localMessageNumber).padStart(4, '0') + '.' + extension
 
   downloadFile(ctx.reply, url, fileName)
 })
