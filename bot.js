@@ -2,6 +2,8 @@ const { Telegraf } = require('telegraf')
 const fetch = require('node-fetch')
 const fs = require('fs')
 
+const downloadDirectory = './downloaded_files'
+
 
 class HTTPResponseError extends Error {
 	constructor(response, ...args) {
@@ -21,11 +23,11 @@ const downloadFile = (async (reply, url, fileName) => {
       response.body.pipe(fileStream)
       response.body.on("error", () => {
         // TODO: Some way to access error message?
-        reply('Error while saving file.')
+        reply('Error while saving file with url ' + url + '.')
         reject()
       })
       fileStream.on("finish", () => {
-        reply('Succesfully downloaded file.')
+        reply('Succesfully downloaded ' + fileName + '.')
         resolve()
       })
     })
@@ -57,9 +59,14 @@ bot.on('message', async ctx => {
     return
   }
 
-  downloadFile(ctx.reply, url, './downloaded_files/asdf.jpg')
+  // isoformat-timestamp where we remove all occurences of ':' and '.' (so the
+  // filename constructed from it does not cause trouble on Windows)
+  timestamp = (new Date().toISOString()).replace(/:/g, '').replace(/\./g, '')
+  urlFileName = url.split('/').slice(-1)[0]
+  extension = urlFileName.split('.')[1]
+  fileName = downloadDirectory + '/' + timestamp + '.' + extension
 
-  ctx.reply('Now downloading file with url ' + url)
+  downloadFile(ctx.reply, url, fileName)
 })
 
 bot.launch()
