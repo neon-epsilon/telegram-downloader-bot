@@ -57,7 +57,7 @@ bot.on('message', async ctx => {
     return
   }
 
-  downloadFile(ctx, url).then( () => {} )
+  downloadFile(ctx, url)
 
   ctx.reply('Now downloading file with url ' + url)
 })
