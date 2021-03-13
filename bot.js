@@ -39,6 +39,9 @@ async function downloadFile(reply, url, fileName) {
 function makeMessageHandler() {
   var globalMessageNumber = 0
   return (async ctx => {
+    // Keep track of message number and make it part of the name of the
+    // downloaded file. This makes sure that image order is preserved when
+    // forwarding many images to the bot.
     const localMessageNumber = ++globalMessageNumber
     const messageTime = new Date()
 
