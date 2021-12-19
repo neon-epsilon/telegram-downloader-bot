@@ -1,6 +1,9 @@
 const { Telegraf } = require('telegraf')
 const fetch = require('node-fetch')
 const fs = require('fs')
+const util = require('util')
+
+const debuglog = util.debuglog('app')
 
 const downloadDirectory = './downloaded_files'
 
@@ -45,13 +48,18 @@ function makeMessageHandler() {
     const localMessageNumber = ++globalMessageNumber
     const messageTime = new Date()
 
-    const data = ctx.update.message.photo || ctx.update.message.video
+    debuglog("Message handler received message:")
+    debuglog(ctx.update.message)
+
+    const data = ctx.update.message.photo || ctx.update.message.video || ctx.update.message.document
 
     if(!data) {
       return
     }
 
     const fileId = ctx.update.message.photo ?
+      // Photos have two file ids: one for the thumbnail (which comes first)
+      // and one for the actual photo. We want the latter.
       data.slice(-1)[0].file_id :
       data.file_id
 
@@ -66,8 +74,13 @@ function makeMessageHandler() {
 
     const timestamp = messageTime.toISOString().replace(/:/g, '').split('.')[0]
     const urlFileName = url.split('/').slice(-1)[0]
-    const [base, extension] = urlFileName.split('.')
-    const fileName = downloadDirectory + '/' + timestamp + '_' + String(localMessageNumber).padStart(4, '0') + '.' + extension
+    const [_base, extension] = urlFileName.split('.')
+    const fileNamePrefix = downloadDirectory + '/' + timestamp + '_' + String(localMessageNumber).padStart(4, '0')
+    // A document has a proper file name; for other types of data use generate
+    // a file name from the timestamp.
+    const fileName = ctx.update.message.document ?
+      fileNamePrefix + '_' + data.file_name :
+      fileNamePrefix + '.' + extension
 
     downloadFile(ctx.reply, url, fileName)
   })
